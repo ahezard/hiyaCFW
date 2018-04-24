@@ -108,15 +108,6 @@ int main( int argc, char **argv) {
 	// defaultExceptionHandler();
 
 	if (fatInitDefault()) {
-		fifoWaitValue32(FIFO_USER_02);
-		if (fifoGetValue32(FIFO_USER_01) == 0) {
-			int size = 32;
-			FILE* ResetData = fopen("sd:/hiya/ResetData.bin","rb");
-			fread((void*)0x02000300,1,size,ResetData);
-			fclose(ResetData);
-			fifoSendValue32(FIFO_USER_08, 1);
-			for (int i = 0; i < 5; i++) { swiWaitForVBlank(); }
-		}
 
 		LoadSettings();
 	

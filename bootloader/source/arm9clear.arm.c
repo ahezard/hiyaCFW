@@ -71,6 +71,7 @@ void __attribute__ ((long_call)) __attribute__((naked)) __attribute__((noreturn)
 	while(1);
 }
 
+/*
 void __attribute__ ((long_call)) __attribute__((naked)) __attribute__((noreturn)) initMBK_ARM9 (void) 
 {
 
@@ -95,6 +96,7 @@ void __attribute__ ((long_call)) __attribute__((naked)) __attribute__((noreturn)
 	);
 	while(1);
 }
+*/
 
 /*-------------------------------------------------------------------------
 startBinary_ARM9
@@ -105,9 +107,9 @@ Modified by Chishm:
 --------------------------------------------------------------------------*/
 void __attribute__ ((long_call)) __attribute__((noreturn)) __attribute__((naked)) startBinary_ARM9 (void)
 {
-	REG_SCFG_CLK = 0x87;
-	REG_SCFG_RST = 0x0001;
-	REG_SCFG_MC = 0x0018;
+	// REG_SCFG_CLK = 0x87;
+	// REG_SCFG_RST = 0x0001;
+	// REG_SCFG_MC = 0x0018;
 
 	REG_IME=0;
 	REG_EXMEMCNT = 0xE880;

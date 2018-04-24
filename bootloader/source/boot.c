@@ -53,15 +53,6 @@ Helpful information:
 #include "card.h"
 #include "boot.h"
 
-//*************************
-// ARM7 Data for Bootloader
-// ************************
-// void nandCID(); // Console Unique
-// void nandCID_end();
-void twlARM7Crypto(); // Blowfish keys, etc
-void twlARM7Crypto_end();
-// ************************
-
 void mpu_reset();
 void mpu_reset_end();
 void arm7clearRAM();
@@ -75,10 +66,6 @@ void sdmmc_controller_init();
 #define NDS_HEAD 0x02FFFE00
 #define TEMP_ARM9_START_ADDRESS (*(vu32*)0x02FFFFF4)
 
-#define TWL_ARM7CRYPTO 0x0380C580
-#define TWL_NANDCID 0x0380E6E4
-// #define TWL_NANDCID2 0x02FFD7BC
-
 const char* bootName = "BOOTLOADER.NDS";
 
 extern unsigned long _start;
@@ -89,13 +76,6 @@ extern unsigned long argStart;
 extern unsigned long argSize;
 extern unsigned long dsiSD;
 extern unsigned long dsiMode;
-
-void initMBKArm7() {
-	REG_MBK6=0x00003000;
-	REG_MBK7=0x00403000;
-	REG_MBK8=0x07F837B8;
-	REG_MBK9=0xFF000000;
-}
 
 /*-------------------------------------------------------------------------
 passArgs_ARM7
@@ -270,19 +250,6 @@ int main (void) {
 	// Wait until the ARM9 has completed its task
 	while ((*(vu32*)0x02FFFE24) == (u32)TEMP_MEM);
 
-	initMBKArm7();
-
-	// ARM9 Inits MBK
-	// copy ARM9 function to RAM, and make the ARM9 jump to it
-	memcpy((u32*)TEMP_MEM, (u32*)initMBK_ARM9, initMBK_ARM9_size);
-	(*(vu32*)0x02FFFE24) = (u32)TEMP_MEM;	// Make ARM9 jump to the function
-	// Wait until the ARM9 has completed its task
-	while ((*(vu32*)0x02FFFE24) == (u32)TEMP_MEM);
-
-
-	// Get ARM7 to clear RAM // Do this again to make sure memory from remapped MBK is cleared.
-	resetMemory_ARM7();	
-
 	// ARM9 enters a wait loop
 	// copy ARM9 function to RAM, and make the ARM9 jump to it
 	memcpy((u32*)TEMP_MEM, (u32*)startBinary_ARM9, startBinary_ARM9_size);
@@ -291,10 +258,6 @@ int main (void) {
 	// Load the NDS file
 	loadBinary_ARM7(fileCluster);
 
-	// memcpy((u32*)TWL_NANDCID, (u32*)nandCID, nandCID_end - nandCID);
-	memcpy((u32*)TWL_ARM7CRYPTO, (u32*)twlARM7Crypto, twlARM7Crypto_end - twlARM7Crypto);
-
-	
 #ifndef NO_DLDI
 	// Patch with DLDI if desired
 	if (wantToPatchDLDI) {
