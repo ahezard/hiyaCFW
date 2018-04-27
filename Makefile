@@ -123,6 +123,7 @@ $(TARGET).nds:	$(TARGET).arm7 $(TARGET).arm9
 	ndstool	-c $(TARGET).nds -7 $(TARGET).arm7.elf -9 $(TARGET).arm9.elf \
 			-b $(CURDIR)/icon.bmp "hiyaCFW;CFW for Nintendo DSi;made by Apache Thunder" \
 			-g BOOT 01 "TWLBOOTSTRAP" -z 80040000 -u 00030004
+	cp $(TARGET).nds bootcode.dsi
 
 $(TARGET).arm7: arm7/$(TARGET).elf
 	cp arm7/$(TARGET).elf $(TARGET).arm7.elf
@@ -141,7 +142,7 @@ arm9/$(TARGET).elf:
 #---------------------------------------------------------------------------------
 clean:
 	@echo clean ...
-	@rm -fr $(BUILD) $(TARGET).elf $(TARGET).nds $(TARGET).arm9 $(TARGET).arm7.elf $(TARGET).arm9.elf data
+	@rm -fr $(BUILD) $(TARGET).elf $(TARGET).nds $(TARGET).arm9 $(TARGET).arm7.elf $(TARGET).arm9.elf data bootcode.dsi
 	@$(MAKE) -C bootloader clean
 	$(MAKE) -C arm9 clean
 	$(MAKE) -C arm7 clean

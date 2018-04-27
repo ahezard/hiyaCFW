@@ -21,6 +21,7 @@
 #include <nds.h>
 #include <fat.h>
 #include <limits.h>
+#include <nds/fifocommon.h>
 
 #include <stdio.h>
 #include <stdarg.h>
@@ -39,6 +40,9 @@
 #define CONSOLE_SCREEN_WIDTH 32
 #define CONSOLE_SCREEN_HEIGHT 24
 
+bool splash = true;
+bool dsiSplash = false;
+
 void vramcpy_ui (void* dest, const void* src, int size) 
 {
 	u16* destination = (u16*)dest;
@@ -48,7 +52,6 @@ void vramcpy_ui (void* dest, const void* src, int size)
 		size-=2;
 	}
 }
-
 
 void BootSplashInit() {
 
@@ -82,9 +85,6 @@ void LoadScreen() {
 const char* settingsinipath = "sd:/hiya/settings.ini";
 
 int cursorPosition = 0;
-
-bool splash = true;
-bool dsiSplash = false;
 
 void LoadSettings(void) {
 	// GUI
@@ -208,9 +208,18 @@ int main( int argc, char **argv) {
 			}
 		}
 
-		if(dsiSplash) fifoSendValue32(FIFO_USER_03, 1);
-		
+		if(dsiSplash) {
+			fifoSendValue32(FIFO_USER_03, 1);
+			// Tell Arm7 to check FIFO_USER_03 code	
+			fifoSendValue32(FIFO_USER_04, 1);
+			// Small delay to ensure arm7 has time to write i2c stuff
+			for (int i = 0; i < 1*3; i++) { swiWaitForVBlank(); }
+		} else {
+			fifoSendValue32(FIFO_USER_04, 1);
+		}
+
 		if(splash) {
+
 			BootSplashInit();
 
 			LoadScreen();
@@ -221,8 +230,9 @@ int main( int argc, char **argv) {
 		runNdsFile("/BOOTLOADER.NDS", 0, NULL);
 
 	} else {
-		BootSplashInit();
 		
+		BootSplashInit();
+
 		// Display Error Screen
 		swiDecompressLZSSVram ((void*)topErrorTiles, (void*)CHAR_BASE_BLOCK(2), 0, &decompressBiosCallback);
 		swiDecompressLZSSVram ((void*)subErrorTiles, (void*)CHAR_BASE_BLOCK_SUB(2), 0, &decompressBiosCallback);
