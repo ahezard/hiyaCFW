@@ -54,13 +54,19 @@ int main(void) {
 	irqEnable( IRQ_VBLANK | IRQ_VCOUNT | IRQ_NETWORK );
 
 	while (1) {
-		if(fifoCheckValue32(FIFO_USER_03)) {
-			i2cWriteRegister(0x4A, 0x70, 0x00);	// Bootflag = Softboot
-		} else {
-			i2cWriteRegister(0x4A, 0x70, 0x01);	// Bootflag = Warmboot/SkipHealthSafety
-		}
-
-		swiWaitForVBlank();
-	}
+        if(fifoCheckValue32(FIFO_USER_03)) {
+			if (i2cReadRegister(0x4A, 0x71) == 0x01) {
+				i2cWriteRegister(0x4A, 0x70, 0x01);    // Bootflag = Warmboot/SkipHealthSafety
+			} else {
+				i2cWriteRegister(0x4A, 0x70, 0x00);    // Bootflag = Softboot
+				i2cWriteRegister(0x4A, 0x71, 0x01);    // Set so that DSi splash doesn't appear again until hard-reboot
+			}
+        } else {
+            i2cWriteRegister(0x4A, 0x70, 0x01);    // Bootflag = Warmboot/SkipHealthSafety
+        }
+        // After checking and writing i2c, set FIFO_USER_03 back to 0 so arm7 doesn't repeatedly run that code.
+        if(fifoCheckValue32(FIFO_USER_03)) { fifoSendValue32(FIFO_USER_03, 0); }
+        swiWaitForVBlank();
+    }
 }
 
