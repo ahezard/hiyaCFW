@@ -91,36 +91,17 @@ void LoadBMP(bool top) {
 	fseek(file, 0xe, SEEK_SET);
 	u8 pixelStart = (u8)fgetc(file) + 0xe;
 	fseek(file, pixelStart, SEEK_SET);
-	for (int y=191; y>=168; y--) {
+	for (int y=191; y>=0; y--) {
 		u16 buffer[256];
 		fread(buffer, 2, 0x100, file);
 		u16* src = buffer;
 		for (int i=0; i<256; i++) {
 			u16 val = *(src++);
-			BG_GFX[0x20000+y*256+i] = ((val>>10)&0x1f) | ((val)&(0x1f<<5)) | (val&0x1f)<<10 | BIT(15);
-		}
-	}
-	for (int y=167; y>=24; y--) {
-		u16 buffer[256];
-		fread(buffer, 2, 256, file);
-		u16* src = buffer;
-		for (int i=0; i<48; i++) {
-			u16 val = *(src++);
-			BG_GFX[0x20000+y*256+i] = ((val>>10)&0x1f) | ((val)&(0x1f<<5)) | (val&0x1f)<<10 | BIT(15);
-		}
-		src += 160;
-		for (int i=208; i<256; i++) {
-			u16 val = *(src++);
-			BG_GFX[0x20000+y*256+i] = ((val>>10)&0x1f) | ((val)&(0x1f<<5)) | (val&0x1f)<<10 | BIT(15);
-		}
-	}
-	for (int y=23; y>=0; y--) {
-		u16 buffer[256];
-		fread(buffer, 2, 0x100, file);
-		u16* src = buffer;
-		for (int i=0; i<256; i++) {
-			u16 val = *(src++);
-			BG_GFX[0x20000+y*256+i] = ((val>>10)&0x1f) | ((val)&(0x1f<<5)) | (val&0x1f)<<10 | BIT(15);
+			if (top) {
+				BG_GFX[0x20000+y*256+i] = ((val>>10)&0x1f) | ((val)&(0x1f<<5)) | (val&0x1f)<<10 | BIT(15);
+			} else {
+				BG_GFX[y*256+i] = ((val>>10)&0x1f) | ((val)&(0x1f<<5)) | (val&0x1f)<<10 | BIT(15);
+			}
 		}
 	}
 
@@ -147,7 +128,7 @@ void LoadScreen() {
 			// Set up background
 			videoSetModeSub(MODE_2_2D | DISPLAY_BG2_ACTIVE);
 			vramSetBankC (VRAM_C_SUB_BG_0x06200000);
-			REG_BG2CNT = BG_MAP_BASE(16) | BG_BMP16_256x256;
+			REG_BG2CNT = BG_MAP_BASE(0) | BG_BMP16_256x256;
 			REG_BG2X = 0;
 			REG_BG2Y = 0;
 			REG_BG2PA = 1<<8;
