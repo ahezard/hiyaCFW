@@ -40,11 +40,13 @@
 #define CONSOLE_SCREEN_WIDTH 32
 #define CONSOLE_SCREEN_HEIGHT 24
 
+bool gotoSettings = false;
+
 bool splash = true;
 bool dsiSplash = false;
 
 bool topSplashFound = true;
-bool bottomSplashFound = true;
+bool bottomSplashFound = false;
 
 void vramcpy_ui (void* dest, const void* src, int size) 
 {
@@ -81,11 +83,11 @@ void BootSplashInit() {
 
 void LoadBMP(bool top) {
 	FILE* file;
-	if (top) {
+	//if (top) {
 		file = fopen("sd:/hiya/splashtop.bmp", "rb");
-	} else {
-		file = fopen("sd:/hiya/splashbottom.bmp", "rb");
-	}
+	//} else {
+	//	file = fopen("sd:/hiya/splashbottom.bmp", "rb");
+	//}
 
 	// Start loading
 	fseek(file, 0xe, SEEK_SET);
@@ -97,11 +99,11 @@ void LoadBMP(bool top) {
 		u16* src = buffer;
 		for (int i=0; i<256; i++) {
 			u16 val = *(src++);
-			if (top) {
+			//if (top) {
 				BG_GFX[0x20000+y*256+i] = ((val>>10)&0x1f) | ((val)&(0x1f<<5)) | (val&0x1f)<<10 | BIT(15);
-			} else {
-				BG_GFX[y*256+i] = ((val>>10)&0x1f) | ((val)&(0x1f<<5)) | (val&0x1f)<<10 | BIT(15);
-			}
+			//} else {
+			//	BG_GFX[y*256+i] = ((val>>10)&0x1f) | ((val)&(0x1f<<5)) | (val&0x1f)<<10 | BIT(15);
+			//}
 		}
 	}
 
@@ -110,6 +112,18 @@ void LoadBMP(bool top) {
 
 void LoadScreen() {
 	if (topSplashFound || bottomSplashFound) {
+		// Make screens black before loading image(s)
+		if(!gotoSettings) {
+			videoSetMode(MODE_0_2D);
+			vramSetBankG(VRAM_G_MAIN_BG);
+			videoSetModeSub(MODE_0_2D);
+			vramSetBankH(VRAM_H_SUB_BG);
+		}
+		consoleInit(NULL, 0, BgType_Text4bpp, BgSize_T_256x256, 15, 0, true, true);
+		consoleClear();
+		consoleInit(NULL, 1, BgType_Text4bpp, BgSize_T_256x256, 15, 0, false, true);
+		consoleClear();
+
 		if (topSplashFound) {
 			// Set up background
 			videoSetMode(MODE_3_2D | DISPLAY_BG3_ACTIVE);
@@ -124,7 +138,7 @@ void LoadScreen() {
 
 			LoadBMP(true);
 		}
-		if (bottomSplashFound) {
+		/*if (bottomSplashFound) {
 			// Set up background
 			videoSetModeSub(MODE_2_2D | DISPLAY_BG2_ACTIVE);
 			vramSetBankC (VRAM_C_SUB_BG_0x06200000);
@@ -137,7 +151,7 @@ void LoadScreen() {
 			REG_BG2PD = 1<<8;
 
 			LoadBMP(false);
-		}
+		}*/
 	} else {
 		// Display Load Screen
 		swiDecompressLZSSVram ((void*)topLoadTiles, (void*)CHAR_BASE_BLOCK(2), 0, &decompressBiosCallback);
@@ -176,7 +190,6 @@ int main( int argc, char **argv) {
 
 		LoadSettings();
 	
-		bool gotoSettings = false;
 		if (access("sd:/hiya/settings.ini", F_OK)) {
 			gotoSettings = true;
 		}
@@ -225,7 +238,7 @@ int main( int argc, char **argv) {
 
 					consoleInit(NULL, 1, BgType_Text4bpp, BgSize_T_256x256, 15, 0, false, true);
 					consoleClear();
-					
+
 					if(cursorPosition == 0) {
 						printf("Enable splash screen.");
 					} else if(cursorPosition == 1) {
@@ -284,9 +297,9 @@ int main( int argc, char **argv) {
 		}
 
 		if (splash) {
-		
+
 			if (access("sd:/hiya/splashtop.bmp", F_OK)) topSplashFound = false;
-			if (access("sd:/hiya/splashbottom.bmp", F_OK)) bottomSplashFound = false;
+			//if (access("sd:/hiya/splashbottom.bmp", F_OK)) bottomSplashFound = false;
 
 			BootSplashInit();
 
