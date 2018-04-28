@@ -6,5 +6,6 @@ Nothing to see here... yet.
 
 # Credits
 - Apache Thunder, NoCash, StuckPixel, Shutterbug2000, and Gericom.
+- Drenn: .bmp loading code from GameYob, for custom splash screens.
 - Robz8: Logo graphic, and settings screen.
 - WinterMute/devkitPro: For the majority of the base code like nds-bootloader which this loader uses.
