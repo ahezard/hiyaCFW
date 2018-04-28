@@ -132,7 +132,7 @@ void LoadScreen() {
 		if (topSplashFound) {
 			// Set up background
 			videoSetMode(MODE_3_2D | DISPLAY_BG3_ACTIVE);
-			vramSetBankD(VRAM_D_MAIN_BG_0x06020000);
+			vramSetBankD(VRAM_D_MAIN_BG_0x06040000);
 			REG_BG3CNT = BG_MAP_BASE(16) | BG_BMP16_256x256;
 			REG_BG3X = 0;
 			REG_BG3Y = 0;
