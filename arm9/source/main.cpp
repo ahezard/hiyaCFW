@@ -199,6 +199,11 @@ int main( int argc, char **argv) {
 		if(keysHeld() & KEY_SELECT) gotoSettings = true;
 		
 		if(gotoSettings) {
+			// Debug code
+			//FILE* ResetData = fopen("sd:/hiya/ResetData.bin","wb");
+			//fwrite((void*)0x02000000,1,0x800,ResetData);
+			//fclose(ResetData);
+
 			// Subscreen as a console
 			videoSetMode(MODE_0_2D);
 			vramSetBankG(VRAM_G_MAIN_BG);
@@ -294,6 +299,10 @@ int main( int argc, char **argv) {
 			for (int i = 0; i < 1*3; i++) { swiWaitForVBlank(); }
 		} else {
 			fifoSendValue32(FIFO_USER_04, 1);
+		}
+
+		if (!gotoSettings) {
+			if(*(u32*)0x02000300 == 0x434E4C54) splash = false;	// if "CNLT" is found, then don't show splash
 		}
 
 		if (splash) {
