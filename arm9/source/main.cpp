@@ -213,7 +213,7 @@ int main( int argc, char **argv) {
 					consoleInit(NULL, 0, BgType_Text4bpp, BgSize_T_256x256, 15, 0, true, true);
 					consoleClear();
 					
-					printf("HiyaCFW v1.1 configuration\n");
+					printf("HiyaCFW v1.2 configuration\n");
 					printf("Press A to select, START to save");
 					printf("\n");
 					

@@ -115,14 +115,14 @@ endif
 
 export GAME_TITLE := $(TARGET)
 
-.PHONY: bootloader BootStrap clean
+.PHONY: bootloader BootStrap clean arm7/$(TARGET).elf arm9/$(TARGET).elf
 
 all:	bootloader $(TARGET).nds
 
 $(TARGET).nds:	$(TARGET).arm7 $(TARGET).arm9
-	ndstool	-c $(TARGET).nds -7 $(TARGET).arm7.elf -9 $(TARGET).arm9.elf \
+	ndstool	-c $(TARGET).nds -7 $(TARGET).arm7.elf -9 $(TARGET).arm9.elf -r9 02000800 \
 			-b $(CURDIR)/icon.bmp "hiyaCFW;CFW for Nintendo DSi;made by Apache Thunder" \
-			-g BOOT 01 "TWLBOOTSTRAP" -z 80040000 -u 00030004
+			-g HIYA 01 "HIYACFW" -z 80040000 -u 00030004
 	cp $(TARGET).nds bootcode.dsi
 
 $(TARGET).arm7: arm7/$(TARGET).elf
