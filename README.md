@@ -2,7 +2,8 @@
 # hiyaCFW
 World's FIRST Nintendo DSi CFW!
 
-Nothing to see here... yet.
+With this CFW, you can run custom DSiWare, alongside region free and 3DS-exclusive DSiWare (WarioWare Touched), on your SD card, via NAND to SD redirection!    
+You can also run blocked flashcards (such as R4 Ultra).
 
 # Credits
 - Apache Thunder, NoCash, StuckPixel, Shutterbug2000, and Gericom.
