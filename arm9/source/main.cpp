@@ -332,7 +332,7 @@ int main( int argc, char **argv) {
 
 		if (titleAutoboot) {
 			FILE* ResetData = fopen("sd:/hiya/autoboot.bin","rb");
-			fread((void*)0x02000300,1,0x20,ResetData);
+			if (ResetData) fread((void*)0x02000300,1,0x20,ResetData);
 			fclose(ResetData);
 		}
 
