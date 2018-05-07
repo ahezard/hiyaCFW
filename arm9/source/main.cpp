@@ -44,6 +44,7 @@ bool gotoSettings = false;
 
 bool splash = true;
 bool dsiSplash = false;
+bool titleAutoboot = false;
 
 bool topSplashFound = true;
 bool bottomSplashFound = false;
@@ -171,6 +172,7 @@ void LoadSettings(void) {
 
 	splash = settingsini.GetInt("HIYA-CFW", "SPLASH", 0);
 	dsiSplash = settingsini.GetInt("HIYA-CFW", "DSI_SPLASH", 0);
+	titleAutoboot = settingsini.GetInt("HIYA-CFW", "TITLE_AUTOBOOT", 0);
 }
 
 void SaveSettings(void) {
@@ -179,6 +181,7 @@ void SaveSettings(void) {
 
 	settingsini.SetInt("HIYA-CFW", "SPLASH", splash);
 	settingsini.SetInt("HIYA-CFW", "DSI_SPLASH", dsiSplash);
+	settingsini.SetInt("HIYA-CFW", "TITLE_AUTOBOOT", titleAutoboot);
 	settingsini.SaveIniFile(settingsinipath);
 }
 
@@ -197,10 +200,10 @@ int main( int argc, char **argv) {
 		scanKeys();
 
 		if(keysHeld() & KEY_SELECT) gotoSettings = true;
-		
+
 		if(gotoSettings) {
 			// Debug code
-			//FILE* ResetData = fopen("sd:/hiya/ResetData.bin","wb");
+			//FILE* ResetData = fopen("sd:/hiya/ResetData_extract.bin","wb");
 			//fwrite((void*)0x02000000,1,0x800,ResetData);
 			//fclose(ResetData);
 
@@ -209,22 +212,22 @@ int main( int argc, char **argv) {
 			vramSetBankG(VRAM_G_MAIN_BG);
 			videoSetModeSub(MODE_0_2D);
 			vramSetBankH(VRAM_H_SUB_BG);
-			
+
 			int pressed = 0;
 			bool menuprinted = true;
-			
+
 			while(1) {
 				if(menuprinted) {
 					consoleInit(NULL, 0, BgType_Text4bpp, BgSize_T_256x256, 15, 0, true, true);
 					consoleClear();
-					
-					printf("HiyaCFW v1.2 configuration\n");
+
+					printf("HiyaCFW v1.3 configuration\n");
 					printf("Press A to select, START to save");
 					printf("\n");
-					
+
 					if(cursorPosition == 0) printf(">");
 					else printf(" ");
-					
+
 					printf("Splash: ");
 					if(splash)
 						printf("Off( ), On(x)");
@@ -239,7 +242,16 @@ int main( int argc, char **argv) {
 						printf("(x)");
 					else
 						printf("( )");
-					printf(" DSi Splash/H&S screen");
+					printf(" DSi Splash/H&S screen\n");
+
+					if(cursorPosition == 2) printf(">");
+					else printf(" ");
+
+					if(titleAutoboot)
+						printf("(x)");
+					else
+						printf("( )");
+					printf(" Autoboot title\n");
 
 					consoleInit(NULL, 1, BgType_Text4bpp, BgSize_T_256x256, 15, 0, false, true);
 					consoleClear();
@@ -249,17 +261,21 @@ int main( int argc, char **argv) {
 					} else if(cursorPosition == 1) {
 						printf("Enable showing the DSi Splash/\n");
 						printf("Health & Safety screen.");
+					} else if(cursorPosition == 2) {
+						printf("Load title contained in\n");
+						printf("sd:/hiya/autoboot.bin\n");
+						printf("instead of the DSi Menu.");
 					}
-					
+
 					menuprinted = false;
 				}
-				
+
 				do {
 					scanKeys();
 					pressed = keysDownRepeat();
 					swiWaitForVBlank();
 				} while (!pressed);
-				
+
 				if (pressed & KEY_A) {
 					switch(cursorPosition){
 						case 0:
@@ -269,21 +285,24 @@ int main( int argc, char **argv) {
 						case 1:
 							dsiSplash = !dsiSplash;
 							break;
+						case 2:
+							titleAutoboot = !titleAutoboot;
+							break;
 					}
 					menuprinted = true;
 				}
-				
+
 				if (pressed & KEY_UP) {
-					cursorPosition -= 1;
+					cursorPosition--;
 					menuprinted = true;
 				} else if (pressed & KEY_DOWN) {
-					cursorPosition += 1;
+					cursorPosition++;
 					menuprinted = true;
 				}
-				
-				if (cursorPosition < 0) cursorPosition = 1;
-				if (cursorPosition > 1) cursorPosition = 0;
-				
+
+				if (cursorPosition < 0) cursorPosition = 2;
+				if (cursorPosition > 2) cursorPosition = 0;
+
 				if (pressed & KEY_START) {
 					SaveSettings();
 					break;
@@ -301,8 +320,20 @@ int main( int argc, char **argv) {
 			fifoSendValue32(FIFO_USER_04, 1);
 		}
 
-		if (!gotoSettings) {
-			if(*(u32*)0x02000300 == 0x434E4C54) splash = false;	// if "CNLT" is found, then don't show splash
+		if (!gotoSettings && (*(u32*)0x02000300 == 0x434E4C54)) {
+			// if "CNLT" is found, then don't show splash
+			splash = false;
+		}
+
+		if ((*(u32*)0x02000300 == 0x434E4C54) && (*(u32*)0x02000310 != 0x00000000)) {
+			// if "CNLT" is found, and a title is set to launch, then don't autoboot title in "autoboot.bin"
+			titleAutoboot = false;
+		}
+
+		if (titleAutoboot) {
+			FILE* ResetData = fopen("sd:/hiya/autoboot.bin","rb");
+			fread((void*)0x02000300,1,0x20,ResetData);
+			fclose(ResetData);
 		}
 
 		if (splash) {
