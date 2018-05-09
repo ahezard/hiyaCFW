@@ -322,9 +322,11 @@ int main( int argc, char **argv) {
 
 		if (titleAutoboot) {
 			FILE* ResetData = fopen("sd:/hiya/autoboot.bin","rb");
-			if (ResetData) fread((void*)0x02000300,1,0x20,ResetData);
+			if (ResetData) {
+				fread((void*)0x02000300,1,0x20,ResetData);
+				dsiSplash = false;	// Disable DSi splash, so that DSi Menu doesn't appear
+			}
 			fclose(ResetData);
-			dsiSplash = false;	// Disable DSi splash, so that DSi Menu doesn't appear
 		}
 
 		if (!dsiSplash) {
