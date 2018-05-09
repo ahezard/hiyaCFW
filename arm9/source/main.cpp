@@ -221,7 +221,7 @@ int main( int argc, char **argv) {
 					consoleInit(NULL, 0, BgType_Text4bpp, BgSize_T_256x256, 15, 0, true, true);
 					consoleClear();
 
-					printf("HiyaCFW v1.3 configuration\n");
+					printf("HiyaCFW v1.3.1 configuration\n");
 					printf("Press A to select, START to save");
 					printf("\n");
 
@@ -310,16 +310,6 @@ int main( int argc, char **argv) {
 			}
 		}
 
-		if (dsiSplash) {
-			fifoSendValue32(FIFO_USER_03, 1);
-			// Tell Arm7 to check FIFO_USER_03 code	
-			fifoSendValue32(FIFO_USER_04, 1);
-			// Small delay to ensure arm7 has time to write i2c stuff
-			for (int i = 0; i < 1*3; i++) { swiWaitForVBlank(); }
-		} else {
-			fifoSendValue32(FIFO_USER_04, 1);
-		}
-
 		if (!gotoSettings && (*(u32*)0x02000300 == 0x434E4C54)) {
 			// if "CNLT" is found, then don't show splash
 			splash = false;
@@ -334,6 +324,17 @@ int main( int argc, char **argv) {
 			FILE* ResetData = fopen("sd:/hiya/autoboot.bin","rb");
 			if (ResetData) fread((void*)0x02000300,1,0x20,ResetData);
 			fclose(ResetData);
+			dsiSplash = false;	// Disable DSi splash, so that DSi Menu doesn't appear
+		}
+
+		if (!dsiSplash) {
+			fifoSendValue32(FIFO_USER_03, 1);
+			// Tell Arm7 to check FIFO_USER_03 code	
+			fifoSendValue32(FIFO_USER_04, 1);
+			// Small delay to ensure arm7 has time to write i2c stuff
+			for (int i = 0; i < 1*3; i++) { swiWaitForVBlank(); }
+		} else {
+			fifoSendValue32(FIFO_USER_04, 1);
 		}
 
 		if (splash) {
