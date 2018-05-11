@@ -202,11 +202,6 @@ int main( int argc, char **argv) {
 		if(keysHeld() & KEY_SELECT) gotoSettings = true;
 
 		if(gotoSettings) {
-			// Debug code
-			//FILE* ResetData = fopen("sd:/hiya/ResetData_extract.bin","wb");
-			//fwrite((void*)0x02000000,1,0x800,ResetData);
-			//fclose(ResetData);
-
 			// Subscreen as a console
 			videoSetMode(MODE_0_2D);
 			vramSetBankG(VRAM_G_MAIN_BG);
@@ -275,6 +270,14 @@ int main( int argc, char **argv) {
 					pressed = keysDownRepeat();
 					swiWaitForVBlank();
 				} while (!pressed);
+
+				if (pressed & KEY_L) {
+					// Debug code
+					FILE* ResetData = fopen("sd:/hiya/ResetData_extract.bin","wb");
+					fwrite((void*)0x02000000,1,0x800,ResetData);
+					fclose(ResetData);
+					for (int i = 0; i < 30; i++) swiWaitForVBlank();
+				}
 
 				if (pressed & KEY_A) {
 					switch(cursorPosition){
