@@ -40,6 +40,8 @@
 #define CONSOLE_SCREEN_WIDTH 32
 #define CONSOLE_SCREEN_HEIGHT 24
 
+#define TMD_SIZE        0x208
+
 bool gotoSettings = false;
 
 bool splash = true;
@@ -185,6 +187,14 @@ void SaveSettings(void) {
 	settingsini.SaveIniFile(settingsinipath);
 }
 
+void setupConsole() {
+	// Subscreen as a console
+	videoSetMode(MODE_0_2D);
+	vramSetBankG(VRAM_G_MAIN_BG);
+	videoSetModeSub(MODE_0_2D);
+	vramSetBankH(VRAM_H_SUB_BG);
+}
+
 int main( int argc, char **argv) {
 
 	// defaultExceptionHandler();
@@ -202,11 +212,7 @@ int main( int argc, char **argv) {
 		if(keysHeld() & KEY_SELECT) gotoSettings = true;
 
 		if(gotoSettings) {
-			// Subscreen as a console
-			videoSetMode(MODE_0_2D);
-			vramSetBankG(VRAM_G_MAIN_BG);
-			videoSetModeSub(MODE_0_2D);
-			vramSetBankH(VRAM_H_SUB_BG);
+			setupConsole();
 
 			int pressed = 0;
 			bool menuprinted = true;
@@ -354,7 +360,40 @@ int main( int argc, char **argv) {
 			for (int i = 0; i < 60*3; i++) { swiWaitForVBlank(); }
 		}
 
-		runNdsFile("/BOOTLOADER.NDS", 0, NULL);
+		char tmdpath[256];
+		for (u8 i = 0x41; i <= 0x5A; i++) {
+			snprintf (tmdpath, sizeof(tmdpath), "sd:/title/00030017/484e41%x/content/title.tmd", i);
+			if (access(tmdpath, F_OK)) {} else { break; }
+		}
+		FILE* f_tmd = fopen(tmdpath, "rb");
+		off_t fsize = 0;
+		if (f_tmd) {
+			fseek(f_tmd, 0, SEEK_END);
+			fsize = ftell(f_tmd);
+			if (fsize && (fsize <= TMD_SIZE)) {
+				int err = runNdsFile("/hiya/BOOTLOADER.NDS", 0, NULL);
+				setupConsole();
+				consoleInit(NULL, 0, BgType_Text4bpp, BgSize_T_256x256, 15, 0, true, true);
+				consoleClear();
+				iprintf ("Start failed. Error %i\n", err);
+				if (err == 1) printf ("bootloader.nds not found!");
+				consoleInit(NULL, 1, BgType_Text4bpp, BgSize_T_256x256, 15, 0, false, true);
+				consoleClear();
+			} else {
+				fsize = 0;
+				setupConsole();
+				consoleInit(NULL, 0, BgType_Text4bpp, BgSize_T_256x256, 15, 0, true, true);
+				consoleClear();
+				printf("Error!\n");
+				printf("Launcher's .tmd is too big.\n");
+				printf("\n");
+				printf("Please replace it with a clean\n");
+				printf("one.\n");
+				consoleInit(NULL, 1, BgType_Text4bpp, BgSize_T_256x256, 15, 0, false, true);
+				consoleClear();
+			}
+			fclose(f_tmd);
+		}
 
 	} else {
 
