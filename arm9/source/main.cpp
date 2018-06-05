@@ -222,7 +222,7 @@ int main( int argc, char **argv) {
 					consoleInit(NULL, 0, BgType_Text4bpp, BgSize_T_256x256, 15, 0, true, true);
 					consoleClear();
 
-					printf("HiyaCFW v1.3.1 configuration\n");
+					printf("HiyaCFW v1.3.2 configuration\n");
 					printf("Press A to select, START to save");
 					printf("\n");
 
@@ -393,6 +393,15 @@ int main( int argc, char **argv) {
 				consoleClear();
 			}
 			fclose(f_tmd);
+		} else {
+			setupConsole();
+			consoleInit(NULL, 0, BgType_Text4bpp, BgSize_T_256x256, 15, 0, true, true);
+			consoleClear();
+			printf("Error!\n");
+			printf("Failed to read Launcher's\n");
+			printf("title.tmd\n");
+			consoleInit(NULL, 1, BgType_Text4bpp, BgSize_T_256x256, 15, 0, false, true);
+			consoleClear();
 		}
 
 	} else {
